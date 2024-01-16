@@ -1,112 +1,137 @@
+'use client';
+import React, { useState } from 'react'
 import Image from 'next/image'
-
+interface listItem {
+  name:string;
+  mail:string;
+}
 export default function Home() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedChips, setSelectedChips] = useState<listItem[]>([]);
+  const [list,setList]=useState(false);
+  const [highlight,setHighlight]=useState(false);
+  const [count,setCount] =useState(false);
+  const handleChipSelect = (data: listItem,index:number) => {
+    const updatedItems = selectedChips.length > 0 ? [...selectedChips, data] : [data];
+    setSelectedChips(updatedItems);
+    const updatedUsers=users.filter((item,idx)=>idx!=index)
+    setUsers(updatedUsers);
+    setSearchQuery('');
+  }
+  const handleChipDelete = (item: listItem) => {
+    const updatedItems = selectedChips.filter((data, index) => data.name !== item.name && data.mail!== item.mail)
+    setSelectedChips(updatedItems);
+    const updatedUsers=users.length>0?[...users,item]:[item];
+    setUsers(updatedUsers);
+  }
+  const [users,setUsers]=useState([
+    {
+      name: "jithu",
+      mail: 'jithu@gmail.com',
+    },
+    {
+      name: "indrajith",
+      mail: 'indrajith@gmail.com',
+    },
+    {
+      name: "hari",
+      mail: 'hari@gmail.com',
+    },
+    {
+      name: "ijas",
+      mail: 'ijas@gmail.com',
+    },
+    {
+      name: "hello",
+      mail: 'hello@gmail.com',
+    },
+
+  ])
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className="flex min-h-screen flex-col items-center gap-[10px] p-4  bg-slate-200">
+      <div className='w-full h-fit flex items-center justify-center text-[42px] font-extrabold text-violet-500 underline underline-violet-500 font-sans'>Pick a User</div>
+      <div className='flex w-[80%]  h-fit items-start border-blue-500 border-b-[2px]   '>
+      <div className='relative flex flex-row flex-wrap  max-w-[100%]   h-fit  gap-4  '>
+        {/* chips list  */}
+        <div className={'px-4 py-2 max-w-[95%] w-fit h-fit flex flex-grow  flex-wrap  items-center gap-[40px] '}>
+          {
+            selectedChips.length>0?selectedChips.map((item, index) => {
+              return (
+                <div
+                  key={index}
+                  className={((highlight==true && index==selectedChips.length-1)?'ring-2  ring-lime-500':'ring-0')+'w-[200px] max-w-[500px] h-fit flex flex-row justify-between items-center  p-4  bg-stone-500 rounded-[10px] text-black '}>
+                  <div className='flex flex-row items-center w-fit gap-[10px]'>
+                    <div className={'w-[30px] h-[30px] rounded-full  bg-cyan-500 ring-2 ring-black'}/>
+                    <span>{item.name}</span>
+                      </div>
+                    <p
+                      className='flex w-fit h-fit text-black font-bold hover:cursor-pointer '
+                      onClick={() => handleChipDelete(item)}>X</p>
+                  </div>
+              )
+            })
+          :''}
         </div>
+        {/* input field */}
+        <div className='relative flex flex-row  py-2 min-w-[100px] w-fit h-fit items-end object-center '>
+        <input
+          placeholder='Add new User ...'
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onFocus={()=>setList(true)}
+          // onMouseLeave={()=>setList(false)}
+          onKeyDown={(e) => {
+            if (e.key == 'Backspace' && searchQuery == '' && selectedChips.length > 0 && count==true ) {
+              setCount(false);
+              setHighlight(false);
+              const updatedUsers=users.length>0?[...users,selectedChips[selectedChips.length-1]]:[selectedChips[selectedChips.length-1]]
+              setUsers(updatedUsers);
+              const updatedItems = selectedChips.filter((item, index) => index !== selectedChips.length - 1);
+              setSelectedChips(updatedItems);
+            }else if(e.key == 'Backspace' && searchQuery == '' && selectedChips.length > 0 && count==false){
+              setCount(true);
+              setHighlight(true);
+
+            }
+          }}
+          className=' flex items-center outline-none relative w-full h-[20px]  text-black font-bold  text-[16px] rounded-r-[10px] bg-transparent appearance-none mb-4 '>
+
+        </input>
+        {
+          list &&(
+        <div className={'absolute -bottom-[410px] left-[10px] max-w-[500px] max-h-[400px] min-h-[100px] min-w-[200px] w-[350px] h-[400px] bg-white overflow-auto no-scrollbar rounded-[20px]'}>
+          <ul className='flex flex-col w-full h-fit p-2 gap-3 text-black font-bold  '>
+            {
+              users.filter((item) => item.name.toLowerCase().includes(searchQuery)|| item.mail.toLowerCase().includes(searchQuery)).map((item, index) => {
+                return (
+                  <li
+                    onClick={() => {
+
+                      handleChipSelect(item,index);
+                      setList(false);
+                      setHighlight(false);
+                    }}
+                    className='w-full hover:cursor-pointer h-fit flex flex-row justify-between items-center  p-4 bg-slate-200 rounded-[10px]'>
+                      <div className='flex flex-row items-center gap-[10px]'>
+                    <div className={'w-[30px] h-[30px] rounded-full  bg-cyan-500 ring-2 ring-black'}/>
+                    <span>{item.name}</span>
+                      </div>
+                    <span>{item.mail}</span>
+                  </li>
+                )
+              })
+            }
+          </ul>
+        </div>
+
+          )
+        }
+
+        </div>
+
       </div>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
       </div>
     </main>
   )
